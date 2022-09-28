@@ -12,63 +12,45 @@ import numpy as np
 df = pd.read_csv("master.csv")
 
 #Don't need country-year
-
 df = df.drop(columns= ['country-year', 'year'])
 print(df.dtypes)
 
-
 #Check for duplicates
-
 sum(df.duplicated())
 
+#Exploratory Data Analysis
 
 #Histogram of Suicide Rate
-
 plt.hist(df["suicides/100k pop"], bins= 50)
 plt.xlabel("Suicides/100k pop")
 plt.ylabel("Counts")
 
-
 #Number per Country (Not too much correlations for country)
-
 country= df["country"]
 suicides=df["suicides/100k pop"]
-
 plt.plot(country, suicides)
 plt.xticks(rotation = 90,fontsize=5)
-
 plt.show()
-
 
 #Sort Countries (There seems to not be too much of a correlation for suicides and countries)
 #We will eliminate this variable
-
-#df.groupby('country').agg({"suicides/100k pop".join,}).reset_index()
-
 group =df.groupby('country')
-
 new_df = group.count()
 plt.plot(new_df["suicides/100k pop"])
 plt.xticks(rotation = 90,fontsize=7)
 plt.xticks(np.arange(0, len(new_df["suicides/100k pop"])+1, 2))
 plt.show()
 
-
 #Check Rates By Sex
-
 male = df[df["sex"] == "male"]
-
 female= df[df["sex"] == "female"]
-
 male_suicide= sum(male["suicides_no"])
-
 female_suicide= sum(female["suicides_no"])
 
 print(f"Number of Male Suicides= {male_suicide}")
 print(f"Number of female Suicides= {female_suicide}")
 
 #Plot Male vs females (Seems to be clear indication that males are more likely to commit suicide)
-
 sns.barplot(df["sex"], df["suicides_no"])
 
 #Plot Generation
@@ -80,14 +62,12 @@ plt.figure(figsize=(10,10))
 sns.barplot(df["generation"], df['suicides/100k pop'])
 
 #Check if there are Null Values and Also Print Correlation Matrix
-
 corr_plot= sns.heatmap(df.corr(), annot= True)
 
 #Drop Columns
 print(df.isnull().any())
 print()
 print(df["HDI for year"].isna().sum())
-
 new_df = df.drop(columns= ["HDI for year", "country", " gdp_for_year ($) "])
 
 # pandas get_dummies function is the one-hot-encoder
@@ -101,31 +81,19 @@ def encode_onehot(_df, f):
 for f in list(df.columns.values):
     if df[f].dtype == object:
         print(f)
-
 df_o= encode_onehot(new_df, 'generation')
-
 df_o= encode_onehot(df_o, 'sex')
-
 df_o= encode_onehot(df_o, 'age')
 
-df_o
-
-
 #Get Threshold
-
 y_mean= np.mean(df["suicides/100k pop"])
 
 y_std= df["suicides/100k pop"].std()
 
 threshold= y_mean + 0.5 *(y_std)
 
-
 #Set Threshold 
-
 df_o['suicides/100k pop'] = df_o['suicides/100k pop'].apply(lambda x: 1 if x > threshold else 0)
-
-df_o
-
 
 #Split to x and y
 X= df_o.loc[:, df_o.columns != 'suicides/100k pop'].values
@@ -188,7 +156,7 @@ final_df= encode_onehot(final_df, 'age')
 final_df
 
 
-#Should do regression 
+#Linear Regression Pipeline
 new_x = final_df.loc[:, final_df.columns != 'suicides/100k pop'].values
 new_y= final_df.loc[:, final_df.columns == 'suicides/100k pop'].values
 
